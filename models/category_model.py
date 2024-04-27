@@ -6,7 +6,7 @@ from sqlalchemy import (
     ForeignKey
 )
 
-from models.base import Base
+from .base import Base
 
 
 class Category(Base):

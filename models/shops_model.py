@@ -10,7 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from models import Base
+from .base import Base
 
 
 class Shop(Base):
