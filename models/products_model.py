@@ -25,7 +25,7 @@ class Product(Base):
     quantity = Column(Integer, nullable=False)
     slug = Column(String(100), unique=True, nullable=False)
     image_url = Column(Text)
-    category = relationship('Category')
+    category = relationship('Category', backref='product')
 
     __table_args__ = (
         CheckConstraint('price > 0', name='price_check'),

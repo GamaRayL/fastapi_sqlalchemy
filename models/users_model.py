@@ -6,11 +6,18 @@ from sqlalchemy import (
     String,
     Boolean,
     DateTime,
+    Table,
     ForeignKey,
 )
 from sqlalchemy.orm import relationship
 
 from models import Base
+
+favourite_products = Table(
+    'user_product', Base.metadata,
+    Column('user_id', Integer(), ForeignKey('users.id')),
+    Column('product_id', Integer(), ForeignKey('products.id'))
+)
 
 
 class User(Base):
@@ -23,6 +30,6 @@ class User(Base):
     last_name = Column(String(255))
     phone_number = Column(String(255))
     created_at = Column(DateTime, default=datetime.now())
-    fav_product = Column(Integer, ForeignKey('products.id'))
     is_active = Column(Boolean, default=True)
-    products = relationship('Product')
+    product_id = Column(Integer, ForeignKey('products.id'))
+    product = relationship('Product', secondary=favourite_products, backref='user')

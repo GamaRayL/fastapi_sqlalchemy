@@ -5,7 +5,6 @@ from sqlalchemy import (
     Text,
     ForeignKey
 )
-from sqlalchemy.orm import relationship
 
 from models import Base
 
@@ -17,4 +16,3 @@ class Category(Base):
     name = Column(String(100), nullable=False)
     parent_category = Column(ForeignKey('category.id'))
     description = Column(Text)
-    products = relationship('Product')

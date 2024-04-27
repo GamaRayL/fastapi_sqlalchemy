@@ -22,7 +22,7 @@ class Shop(Base):
     logo_url = Column(Text())
     is_active = Column(Boolean(), default=False)
     user_id = Column(ForeignKey('users.id'))
-    items = relationship('ShopItem')
+    items = relationship('ShopItem', backref='shop')
 
 
 class ShopItem(Base):
@@ -32,6 +32,7 @@ class ShopItem(Base):
     quantity = Column(SmallInteger, default=1)
     shop_id = Column(ForeignKey('shops.id'))
     product_id = Column(ForeignKey('products.id'))
+    product = relationship('Product')
 
     __table_args__ = (
         CheckConstraint('quantity >= 0', name='quantity_check')
