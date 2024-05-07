@@ -35,5 +35,5 @@ class ShopItem(Base):
     product = relationship('Product')
 
     __table_args__ = (
-        CheckConstraint('quantity >= 0', name='quantity_check')
+        CheckConstraint('quantity >= 0', name='quantity_check'),
     )

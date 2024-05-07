@@ -21,7 +21,7 @@ class Product(Base):
     description = Column(Text)
     article = Column(String(100), unique=True, nullable=False)
     barcode = Column(String(100), nullable=False)
-    price = Column(Numeric(10, 2), nullable=False)
+    price = Column(Numeric, nullable=False)
     quantity = Column(Integer, nullable=False)
     slug = Column(String(100), unique=True, nullable=False)
     image_url = Column(Text)
