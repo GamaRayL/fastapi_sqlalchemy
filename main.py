@@ -1,5 +1,5 @@
 from models import Order
-from rabbit import order_send
+from rabbit.order_send import order_send
 
 try:
     new_order = Order(customer_id=5, total_amount=1)

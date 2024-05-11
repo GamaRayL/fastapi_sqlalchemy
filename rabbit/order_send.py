@@ -1,7 +1,7 @@
 import pika
 
+from base import connection, channel
 from models import Order
-from .base import connection, channel
 
 
 def order_send(_queue: str, obj: Order):

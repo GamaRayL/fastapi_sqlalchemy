@@ -1,6 +1,9 @@
+import sys
+import traceback
+
 from sqlalchemy.exc import IntegrityError
 
-from database import SessionLocal
+from db.session import SessionLocal
 from models import Order
 from .base import channel
 
@@ -28,7 +31,13 @@ def order_recieve(new_order: Order):
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(
         queue=new_order,
-        on_message_callback=callback
+        on_message_callback=callback,
     )
 
-    channel.start_consuming()
+    try:
+        channel.start_consuming()
+    except KeyboardInterrupt:
+        channel.stop_consuming()
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
+        channel.stop_consuming()
