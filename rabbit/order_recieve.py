@@ -1,36 +1,50 @@
+import json
 import sys
 import traceback
 
+import pika
 from sqlalchemy.exc import IntegrityError
 
-from db.session import SessionLocal
+from database.session import SessionLocal
 from models import Order
-from .base import channel
+from rabbit.order_validation import order_validation, ValidationError
 
 
-def order_recieve(new_order: Order):
-    channel.queue_declare(queue=new_order, durable=True)
+def order_recieve(_queue: str):
+    connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host='localhost'))
+    channel = connection.channel()
+    channel.queue_declare(queue=_queue, durable=True)
+    session = SessionLocal()
     print(' [*] Ожидание сообщений. Для выхода нажмите CTRL+C')
 
-    def callback(ch, method, properties, body: Order):
-        print(f' [x] Получен "{body.__name__}"')
-        session = SessionLocal()
+    def callback(ch, method, properties, body):
+        new_order = json.loads(body.decode())
+        try:
+            order_validation(new_order)
+        except ValidationError as e:
+            print(f'Ошибка валидации: {str(e)}')
+
+        customer_id = new_order.get('customer_id')
+        total_amount = new_order.get('total_amount')
 
         try:
-            with session.begin():
-                session.add(body)
-                session.commit()
+            new_order = Order(
+                customer_id=customer_id,
+                total_amount=total_amount
+            )
+            session.add(new_order)
+            session.commit()
+            print(f'Транзакция прошла успешно. Заказ с {new_order} добавлен в базу')
         except IntegrityError as e:
             print('Ошибка при выполнении операций с базой данных: ', e)
+            session.rollback()
 
-        print(session.query(Order.order_id, Order.total_amount).all())
-
-        print(' [x] Готово')
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(
-        queue=new_order,
+        queue=_queue,
         on_message_callback=callback,
     )
 
@@ -41,3 +55,5 @@ def order_recieve(new_order: Order):
     except Exception:
         traceback.print_exc(file=sys.stdout)
         channel.stop_consuming()
+    finally:
+        session.close()
